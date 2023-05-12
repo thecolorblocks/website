@@ -1,5 +1,12 @@
+@font-face {
+  /* https://juliamono.netlify.app */
+  font-family: JuliaMono-Bold;
+  src: url("https://cdn.jsdelivr.net/gh/cormullion/juliamono/webfonts/JuliaMono-Bold.woff2");
+}
+
 :root {
-  font-family: monospace;
+  /*font-family: monospace;*/
+  font-family: 'JuliaMono-Bold', sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
