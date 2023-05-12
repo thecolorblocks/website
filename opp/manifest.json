@@ -1,0 +1,8 @@
+{
+  "p": "opp",
+  "type": "manifest",
+  "name": "Bitcoin Hash",
+  "ticker": "BitH",
+  "max_supply": 256,
+  "verify": ""
+}
