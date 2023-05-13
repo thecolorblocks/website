@@ -14,10 +14,10 @@ const message = ref(defaultMsg)
 const hashHex = ref(null)
 const map = ref(null)
 const doodle = ref(null)
+const mapTest = ref([])
 
 const doodleCSS = computed(() => {
   let rgbStr = map.value ? map.value.map( i => i.color ).join(',') : ''
-  let bgStr = map.value ? map.value.map( i => i.background ).join(',') : ''
   let unicodeStr = map.value ? map.value.map( i => i.operator ).join(',') : ''
   let css = `
     :doodle {
@@ -35,7 +35,7 @@ const doodleCSS = computed(() => {
 })
 
 const hash = (msg) => {
-  const hashFn = new jsSHA("SHA-256", "TEXT", { encoding: "UTF8", numRounds: 2 })
+  const hashFn = new jsSHA("SHA-256", "TEXT", { encoding: "UTF8", numRounds: 2})
   hashFn.update(msg)
   return hashFn.getHash('HEX')
 }
@@ -45,36 +45,33 @@ const update = (value) => {
   } else {
     hashHex.value = hash(value)
   }
-  map.value = hashHex.value.split('').map( i => {
-    let h = hash(i)
+  map.value = hashHex.value.split('').map( (item, index) => {
+    let v
+    if ( index == hashHex.value.length-1 ) {
+      v = hashHex.value[index] + hashHex.value[0]
+    } else {
+      v = hashHex.value.slice(index, index + 2)
+    }
+    let h = hash(v)
     let rgb = h.slice(0, 6)
-    let unicode = `22${h.slice(4, 6)}`
+    let unicode = `\\22${v}`
+    record(unicode)
     return {
       color: `#${rgb}`,
-      operator: `\\${unicode}`,
+      operator: unicode,
     }
   } )
   doodle.value.update(doodleCSS.value)
 }
 const download = async () => {
   let result = await doodle.value.export({
-    scale: 1,
-    download: false
+    scale: 2,
+    download: true
   })
-  const parser = new DOMParser()
-  const svg = parser.parseFromString(result.svg, 'image/svg+xml').querySelector('svg')
-  const serializer = new XMLSerializer()
-  const link = document.createElement('a');
-  let svgString, dataURL
-
-  svg.style.width = '500px'
-  svg.style.height = '500px'
-  svgString = serializer.serializeToString(svg)
-  dataURL = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgString);
-  
-  link.href = dataURL;
-  link.download = hashHex.value;
-  link.click();
+}
+const record = (operator) => {
+  let index = mapTest.value.findIndex( i => i.operator == operator)
+  mapTest.value[index].number += 1
 }
 
 
@@ -83,6 +80,13 @@ watch(message, (currentValue, oldValue) => {
 })
 
 onMounted(async () => {
+  for (let i = 0; i <= 255; i++) {
+    const hexValue = i.toString(16).padStart(2, '0')
+    mapTest.value.push({
+      operator: `\\22${hexValue}`,
+      number: 0,
+    })
+  }
   update(message.value)
 })
 </script>
@@ -117,6 +121,13 @@ onMounted(async () => {
       <button @click="download">
         Download
       </button>
+    </div>
+    <div>
+      <ul>
+        <li v-for="i in mapTest" :key="i.operator">
+          <span>{{ i.operator }}:</span><strong>{{ i.number }}</strong>
+        </li>
+      </ul>
     </div>
   </div>
 </template>
