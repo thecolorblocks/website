@@ -2,6 +2,8 @@
 
 // TAKE SNAPSHOTS OF MESSAGE AND HEATMAP DATA FOR FUTURE REPLAYS
 
+// CHANGE BITCOIN HASH WITHOUT AFFECTING STORED VALUES FOR DISPLAY PURPOSES
+
 import { ref, computed, watch, onMounted } from 'vue'
 import jsSHA from 'jssha'
 import 'css-doodle'
@@ -138,28 +140,33 @@ onMounted(async () => {
 </script>
 <template>
   <div class="bitcoinhash">
-    <h1 class="center">
+    <css-doodle ref="doodle" class="center">
+      {{ doodleCSS }}
+    </css-doodle>
+    <h1>
       Bitcoin Hash
     </h1>
-    <div>
-      <css-doodle ref="doodle">
-        {{ doodleCSS }}
-      </css-doodle>
-    </div>
-    <p>
-      {{ hashHex }}
-    </p>
     <a href="#" @click="download">
       Download
+    </a>
+    |
+    <a href="#">
+      Inscribe
     </a>
     <h5>
       Message
     </h5>
     <textarea v-model="message" :placeholder="defaultMsg"></textarea>
+    <div>
+      <h5>Hash</h5>
+      <code>
+        {{ hashHex }}
+      </code>
+    </div>
     <h5>
       Hashing Heatmap
     </h5>
-    <div class="heatmap">
+    <div class="heatmap center">
       <div
         v-for="i in mapTest"
         :key="i.operator"
@@ -187,6 +194,10 @@ onMounted(async () => {
 div.bitcoinhash {
   /*font-family: monospace;*/
   font-family: JuliaMono-Bold;
+  text-align: center;
+}
+.center {
+  margin: 0 auto;
 }
 div.heatmap {
   width: 500px;
