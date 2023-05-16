@@ -1,14 +1,7 @@
-@font-face {
-  /* https://juliamono.netlify.app */
-  font-family: JuliaMono-Bold;
-  src: url("https://cdn.jsdelivr.net/gh/cormullion/juliamono/webfonts/JuliaMono-Bold.woff2");
-}
-
+/*
 :root {
-  /*font-family: monospace;*/
-  font-family: 'JuliaMono-Bold', sans-serif;
   line-height: 1.5;
-  font-weight: 400;
+  font-weight: 900;
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
@@ -94,3 +87,4 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+*/
