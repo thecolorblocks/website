@@ -1,8 +1,6 @@
 <script setup>
 
-// TAKE SNAPSHOTS OF MESSAGE AND HEATMAP DATA FOR FUTURE REPLAYS
-
-// CHANGE BITCOIN HASH WITHOUT AFFECTING STORED VALUES FOR DISPLAY PURPOSES
+// Redesign UX/UI: 
 
 import { ref, watch, onMounted } from 'vue'
 import jsSHA from 'jssha'
