@@ -4,48 +4,24 @@
 
 // CHANGE BITCOIN HASH WITHOUT AFFECTING STORED VALUES FOR DISPLAY PURPOSES
 
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import jsSHA from 'jssha'
 import 'css-doodle'
-import domtoimage from 'dom-to-image-more'
-import { reverseBytes, zeroToOne, toHeatColor, toSpectrumColor } from '../compute'
+import { reverseBytes, zeroToOne, toHeatColor, toBlockColor, toGlyphColor } from '../compute'
 
 import { JuliaMonoMathOperators } from '../fonts'
 
+import Hashglyphs from '../components/Hashglyphs.vue'
 import Heatmap from '../components/Heatmap.vue'
 
-const canvasSize = 500
-const codeSize = 35
 const defaultMsg = 'Hello World'
 
 const title = ref('Bitcoin Hash')
 const message = ref('')
 const hashHex = ref(null)
-const map = ref(null)
-const doodle = ref(null)
-const saturation = ref(100)
-const luminance = ref(60)
+const hashglyphs = ref(null)
 // For heat recording
-const heatmap = ref(null)
-const mapTest = ref([])
-
-const doodleCSS = computed(() => {
-  let rgbStr = map.value ? map.value.map( i => i.color ).join(',') : ''
-  let unicodeStr = map.value ? map.value.map( i => i.operator ).join(',') : ''
-  let css = `
-    :doodle {
-      @grid: 8 / ${canvasSize}px;
-    }
-    background: #000;
-    :after {
-      content: @pick-n(${unicodeStr});
-      color: @pick-n(${rgbStr});
-      font-size: ${codeSize}px;
-      font-weight: 900;
-    }
-  `
-  return css
-})
+const heatmap = ref([])
 
 const hash = (msg) => {
   const hashFn = new jsSHA("SHA-256", "TEXT", { encoding: "UTF8", numRounds: 2})
@@ -58,39 +34,25 @@ const update = (value, init) => {
   } else {
     hashHex.value = hash(value)
   }
-  map.value = hashHex.value.split('').map( (item, index) => {
+  hashglyphs.value = hashHex.value.split('').map( (item, index) => {
     let v
     if ( index == hashHex.value.length-1 ) {
       v = hashHex.value[index] + hashHex.value[0]
     } else {
       v = hashHex.value.slice(index, index + 2)
     }
-    let rgb = toSpectrumColor(parseInt(v, 16) / parseInt('100', 16), saturation.value, luminance.value)
-    let unicode = `\\22${v}`
-    if (!init) record(unicode)
+    let rgb = toGlyphColor(v)
+    let htmlHex = `&#x22${v};`
+    if (!init) record(htmlHex)
     return {
       color: rgb,
-      operator: unicode,
+      htmlHex: htmlHex,
     }
   } )
-  doodle.value.update(doodleCSS.value)
 }
-const download = async () => {
+const download = async (id) => {
   // Get svg information
-  const result = await doodle.value.export({
-    scale: 1,
-    download: false,
-    detail: true
-  })
-
-  // Create svg node
-  const div = document.createElement('div')
-  div.innerHTML = result.svg
-  const svg = div.querySelector('svg')
-
-  // Edit svg style to fix aspect ratio problem
-  svg.style.width = 'unset'
-  svg.style.height = 'unset'
+  const svg = document.querySelector(id)
 
   // Add font data
   const fontDataURI = JuliaMonoMathOperators
@@ -100,7 +62,7 @@ const download = async () => {
     font-family: 'JuliaMono-MathOp';
     src: url(${fontDataURI}) format('woff');
   }
-  .container {
+  .item {
     font-family: 'JuliaMono-MathOp';
   }`
   svg.querySelector('div.host').appendChild(styleElement)
@@ -114,23 +76,20 @@ const download = async () => {
   link.style.display = 'none';
   document.body.appendChild(link); // To work with Firefox
   link.href = dataURL;
-  link.download = `${hashHex.value}.svg`;
+  link.download = id == '#hashglyphs' ? `${hashHex.value}.svg` : `${new Date().getTime()}.svg`
   link.click();
 }
-const record = (operator) => {
-  let index = mapTest.value.findIndex( i => i.operator == operator)
-  let number = mapTest.value[index].number
+
+const record = (htmlHex) => {
+  let index = heatmap.value.findIndex( i => i.htmlHex == htmlHex)
+  let number = heatmap.value[index].number
   // Update
   number += 1
-  mapTest.value[index].number = number
-  mapTest.value[index].heatValue = zeroToOne(number)
-  mapTest.value[index].heatColor = toHeatColor(zeroToOne(number))
+  heatmap.value[index].number = number
+  heatmap.value[index].heatValue = zeroToOne(number)
+  heatmap.value[index].heatColor = toHeatColor(zeroToOne(number))
 }
-const downloadHeatmap = async () => {
-  const heatmap = document.querySelector('div.heatmap')
-  const dataURI = await domtoimage.toSvg(heatmap)
-  console.log(dataURI)
-}
+
 
 
 watch(message, (currentValue, oldValue) => {
@@ -140,9 +99,8 @@ watch(message, (currentValue, oldValue) => {
 onMounted(async () => {
   for (let i = 0; i <= 255; i++) {
     const hexValue = i.toString(16).padStart(2, '0')
-    mapTest.value.push({
-      operator: `\\22${hexValue}`,
-      rawHTML: `&#x22${hexValue};`,
+    heatmap.value.push({
+      htmlHex: `&#x22${hexValue};`,
       number: 0,
       heatValue: 0,
       heatColor: toHeatColor(0)
@@ -157,7 +115,7 @@ onMounted(async () => {
       {{ title }}
     </h1>
     <div>
-      <a href="#" @click="download">
+      <a href="#" @click="download('#hashglyphs')">
         Download
       </a>
       |
@@ -166,9 +124,8 @@ onMounted(async () => {
       </a>
     </div>
     <br />
-    <css-doodle ref="doodle" class="center">
-      {{ doodleCSS }}
-    </css-doodle>
+    <hashglyphs :items="hashglyphs" id="hashglyphs">
+    </hashglyphs>
     <br />
     <div>
       <code>
@@ -183,10 +140,10 @@ onMounted(async () => {
       Hashing Heatmap
     </h5>
     <div>
-      <a href="#" @click="downloadHeatmap">Download</a>
+      <a href="#" @click="download('#heatmap')">Download</a>
     </div>
     <br />
-    <heatmap class="center" :items="mapTest" id="heatmap">
+    <heatmap class="center" :items="heatmap" id="heatmap">
     </heatmap>
     <br />
     <footer>

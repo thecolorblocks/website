@@ -33,13 +33,19 @@ function toHeatColor(x) {
   return `hsl(${hue}, ${saturation}%, ${luminance}%)`
 }
 
-function toSpectrumColor(x, s, l) {
-  const hue = (1-x) * 360
-  return `hsl(${hue}, ${s}%, ${l}%)`
+function toGlyphColor(hex) {
+  const hue = parseInt(hex, 16) / parseInt('100', 16) * 360
+  const saturation = 100
+  const luminance = 50
+  return `hsl(${hue}, ${saturation}%, ${luminance}%)`
+}
+
+function toBlockColor(hex) {
+  return '#' + hex + hex + hex;
 }
 
 function shallowCopy(value) {
   return JSON.parse(JSON.stringify(value))
 }
 
-export { reverseBytes, zeroToOne, toHeatColor, toSpectrumColor, shallowCopy }
+export { reverseBytes, zeroToOne, toHeatColor, toGlyphColor, toBlockColor, shallowCopy }
