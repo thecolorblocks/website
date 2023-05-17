@@ -7,29 +7,27 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import jsSHA from 'jssha'
 import 'css-doodle'
-import { reverseBytes, zeroToOne, toHeatColor, shallowCopy } from '../compute'
+import domtoimage from 'dom-to-image-more'
+import { reverseBytes, zeroToOne, toHeatColor, toSpectrumColor } from '../compute'
 
 import { JuliaMonoMathOperators } from '../fonts'
+
+import Heatmap from '../components/Heatmap.vue'
 
 const canvasSize = 500
 const codeSize = 35
 const defaultMsg = 'Hello World'
 
 const title = ref('Bitcoin Hash')
-const typed = ref([
-  'Bitcoin Hash',
-  'Powered by SHA-256',
-  'Cryptographic Art',
-  'Hexadecimal Visualized',
-])
 const message = ref('')
 const hashHex = ref(null)
 const map = ref(null)
 const doodle = ref(null)
-// For recording
+const saturation = ref(100)
+const luminance = ref(60)
+// For heat recording
+const heatmap = ref(null)
 const mapTest = ref([])
-const iterations = ref(0)
-const snapshots = ref([])
 
 const doodleCSS = computed(() => {
   let rgbStr = map.value ? map.value.map( i => i.color ).join(',') : ''
@@ -67,12 +65,11 @@ const update = (value, init) => {
     } else {
       v = hashHex.value.slice(index, index + 2)
     }
-    let h = hash(v)
-    let rgb = h.slice(0, 6)
+    let rgb = toSpectrumColor(parseInt(v, 16) / parseInt('100', 16), saturation.value, luminance.value)
     let unicode = `\\22${v}`
     if (!init) record(unicode)
     return {
-      color: `#${rgb}`,
+      color: rgb,
       operator: unicode,
     }
   } )
@@ -123,17 +120,16 @@ const download = async () => {
 const record = (operator) => {
   let index = mapTest.value.findIndex( i => i.operator == operator)
   let number = mapTest.value[index].number
-  // Take snapshot
-  snapshots.value[iterations.value] = shallowCopy(mapTest.value)
   // Update
   number += 1
   mapTest.value[index].number = number
   mapTest.value[index].heatValue = zeroToOne(number)
   mapTest.value[index].heatColor = toHeatColor(zeroToOne(number))
-  iterations.value += 1
 }
-const downloadReplay = () => {
-  console.log(snapshots.value)
+const downloadHeatmap = async () => {
+  const heatmap = document.querySelector('div.heatmap')
+  const dataURI = await domtoimage.toSvg(heatmap)
+  console.log(dataURI)
 }
 
 
@@ -157,43 +153,41 @@ onMounted(async () => {
 </script>
 <template>
   <div class="bitcoinhash">
-    <css-doodle ref="doodle" class="center">
-      {{ doodleCSS }}
-    </css-doodle>
     <h1>
       {{ title }}
     </h1>
-    <a href="#" @click="download">
-      Download
-    </a>
-    |
-    <a href="#">
-      Inscribe
-    </a>
-    <h5>
-      Message
-    </h5>
-    <textarea v-model="message" :placeholder="defaultMsg"></textarea>
     <div>
-      <h5>Hash</h5>
+      <a href="#" @click="download">
+        Download
+      </a>
+      |
+      <a href="#">
+        Inscribe
+      </a>
+    </div>
+    <br />
+    <css-doodle ref="doodle" class="center">
+      {{ doodleCSS }}
+    </css-doodle>
+    <br />
+    <div>
       <code>
         {{ hashHex }}
       </code>
     </div>
     <h5>
+      Message
+    </h5>
+    <textarea v-model="message" :placeholder="defaultMsg"></textarea>
+    <h5>
       Hashing Heatmap
     </h5>
-    <a href="#" @click="downloadReplay">Download Replay</a>
-    <div class="heatmap center">
-      <div
-        v-for="i in mapTest"
-        :key="i.operator"
-        class="item"
-        :style="`background-color: ${i.heatColor}`">
-        <span v-html="i.rawHTML">
-        </span>
-      </div>
+    <div>
+      <a href="#" @click="downloadHeatmap">Download</a>
     </div>
+    <br />
+    <heatmap class="center" :items="mapTest" id="heatmap">
+    </heatmap>
     <br />
     <footer>
       <router-link to="/">
@@ -213,23 +207,5 @@ div.bitcoinhash {
   /*font-family: monospace;*/
   font-family: JuliaMono-Bold;
   text-align: center;
-}
-.center {
-  margin: 0 auto;
-}
-div.heatmap {
-  width: 500px;
-  height: 500px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0;
-}
-div.heatmap .item {
-  width: 31.25px;
-  height: 31.25px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: #fff;
 }
 </style>

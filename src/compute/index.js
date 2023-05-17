@@ -22,7 +22,7 @@ function reverseBytes(hex) {
 }
 
 function zeroToOne(x) {
-  return 1 - Math.pow(Math.E, -0.05 * x)
+  return parseFloat((1 - Math.pow(Math.E, -0.05 * x)).toFixed(2))
 }
 
 function toHeatColor(x) {
@@ -33,8 +33,13 @@ function toHeatColor(x) {
   return `hsl(${hue}, ${saturation}%, ${luminance}%)`
 }
 
+function toSpectrumColor(x, s, l) {
+  const hue = (1-x) * 360
+  return `hsl(${hue}, ${s}%, ${l}%)`
+}
+
 function shallowCopy(value) {
   return JSON.parse(JSON.stringify(value))
 }
 
-export { reverseBytes, zeroToOne, toHeatColor, shallowCopy }
+export { reverseBytes, zeroToOne, toHeatColor, toSpectrumColor, shallowCopy }
