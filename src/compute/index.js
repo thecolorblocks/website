@@ -33,4 +33,8 @@ function toHeatColor(x) {
   return `hsl(${hue}, ${saturation}%, ${luminance}%)`
 }
 
-export { computeTxId, computeBlockHash, reverseBytes, zeroToOne, toHeatColor }
+function shallowCopy(value) {
+  return JSON.parse(JSON.stringify(value))
+}
+
+export { reverseBytes, zeroToOne, toHeatColor, shallowCopy }

@@ -7,7 +7,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import jsSHA from 'jssha'
 import 'css-doodle'
-import { reverseBytes, zeroToOne, toHeatColor } from '../compute'
+import { reverseBytes, zeroToOne, toHeatColor, shallowCopy } from '../compute'
 
 import { JuliaMonoMathOperators } from '../fonts'
 
@@ -15,11 +15,21 @@ const canvasSize = 500
 const codeSize = 35
 const defaultMsg = 'Hello World'
 
+const title = ref('Bitcoin Hash')
+const typed = ref([
+  'Bitcoin Hash',
+  'Powered by SHA-256',
+  'Cryptographic Art',
+  'Hexadecimal Visualized',
+])
 const message = ref('')
 const hashHex = ref(null)
 const map = ref(null)
 const doodle = ref(null)
+// For recording
 const mapTest = ref([])
+const iterations = ref(0)
+const snapshots = ref([])
 
 const doodleCSS = computed(() => {
   let rgbStr = map.value ? map.value.map( i => i.color ).join(',') : ''
@@ -113,10 +123,17 @@ const download = async () => {
 const record = (operator) => {
   let index = mapTest.value.findIndex( i => i.operator == operator)
   let number = mapTest.value[index].number
+  // Take snapshot
+  snapshots.value[iterations.value] = shallowCopy(mapTest.value)
+  // Update
   number += 1
   mapTest.value[index].number = number
   mapTest.value[index].heatValue = zeroToOne(number)
   mapTest.value[index].heatColor = toHeatColor(zeroToOne(number))
+  iterations.value += 1
+}
+const downloadReplay = () => {
+  console.log(snapshots.value)
 }
 
 
@@ -144,7 +161,7 @@ onMounted(async () => {
       {{ doodleCSS }}
     </css-doodle>
     <h1>
-      Bitcoin Hash
+      {{ title }}
     </h1>
     <a href="#" @click="download">
       Download
@@ -166,6 +183,7 @@ onMounted(async () => {
     <h5>
       Hashing Heatmap
     </h5>
+    <a href="#" @click="downloadReplay">Download Replay</a>
     <div class="heatmap center">
       <div
         v-for="i in mapTest"
