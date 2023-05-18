@@ -113,13 +113,9 @@ onMounted(async () => {
       {{ title }}
     </h1>
     <div>
-      <a href="#" @click="download('#hashglyphs')">
+      <button class="btn" href="#" @click="download('#hashglyphs')">
         Download
-      </a>
-      |
-      <a href="#">
-        Inscribe
-      </a>
+      </button>
     </div>
     <br />
     <hashglyphs :items="hashglyphs" id="hashglyphs">
