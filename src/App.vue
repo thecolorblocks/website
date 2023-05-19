@@ -2,8 +2,7 @@
 </script>
 
 <template>
-  <router-view />
+  <div class="bg-base-300 min-h-screen">
+    <router-view />
+  </div>
 </template>
-
-<style scoped>
-</style>

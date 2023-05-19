@@ -12,10 +12,11 @@ import { JuliaMonoMathOperators } from '../fonts'
 import Hashglyphs from '../components/Hashglyphs.vue'
 import Heatmap from '../components/Heatmap.vue'
 
-const defaultMsg = 'Hello World'
+const defaultMsg = 'Typing art into existence...'
 
 const title = ref('Bitcoin Hash')
 const message = ref('')
+const size = ref(450)
 const hashHex = ref(null)
 const hashglyphs = ref(null)
 // For heat recording
@@ -108,43 +109,37 @@ onMounted(async () => {
 })
 </script>
 <template>
-  <div class="bitcoinhash">
-    <h1>
-      {{ title }}
-    </h1>
-    <div>
-      <button class="btn" href="#" @click="download('#hashglyphs')">
-        Download
-      </button>
+  <div class="flex gap-16 p-16 place-content-center items-center w-screen h-screen bitcoinhash">
+    <div :class="`flex w-[${size}px]`">
+      <hashglyphs :items="hashglyphs" :size="size" id="hashglyphs">
+      </hashglyphs>
+      <!--div class="flex">
+        <heatmap :items="heatmap" :size="size" id="heatmap">
+        </heatmap>
+      </div-->
     </div>
-    <br />
-    <hashglyphs :items="hashglyphs" id="hashglyphs">
-    </hashglyphs>
-    <br />
-    <div>
-      <code>
-        {{ hashHex }}
-      </code>
+    <div class="flex place-content-center">
+      <div class="indicator flex">
+        <div class="indicator-item indicator-bottom">
+          <button class="btn btn-accent" @click="download('#hashglyphs')">
+            Inscribe
+          </button>
+        </div>
+        <div class="card border w-96">
+          <div class="card-body">
+            <h1 class="card-title text-accent">
+              {{ title }}
+            </h1>
+            <p class="py-6">
+              Inspired by the SHA-256 algorithm which ensures the immutability of the Bitcoin Blockchain, this generative art project let's you generate 
+              <a href="#" class="link-primary">SHA-256 Hashglyphs</a> 
+              from the message you type in.
+            </p>
+            <textarea class="textarea textarea-bordered" v-model="message" :placeholder="defaultMsg"></textarea>
+          </div>
+        </div>
+      </div>
     </div>
-    <h5>
-      Message
-    </h5>
-    <textarea v-model="message" :placeholder="defaultMsg"></textarea>
-    <h5>
-      Hashing Heatmap
-    </h5>
-    <div>
-      <a href="#" @click="download('#heatmap')">Download</a>
-    </div>
-    <br />
-    <heatmap class="center" :items="heatmap" id="heatmap">
-    </heatmap>
-    <br />
-    <footer>
-      <router-link to="/">
-        Return
-      </router-link>
-    </footer>
   </div>
 </template>
 <style scoped>
@@ -154,9 +149,8 @@ onMounted(async () => {
   src: url("https://cdn.jsdelivr.net/gh/cormullion/juliamono/webfonts/JuliaMono-Bold.woff2");
 }
 
-div.bitcoinhash {
+.bitcoinhash {
   /*font-family: monospace;*/
   font-family: JuliaMono-Bold;
-  text-align: center;
 }
 </style>
