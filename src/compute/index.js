@@ -17,6 +17,12 @@ function computeBlockHash(blockHeaderHex) {
   return reverseBytes(secondHash)
 }
 
+function computeHash(text) {
+  const hashFn = new jsSHA("SHA-256", "TEXT", { encoding: "UTF8", numRounds: 2})
+  hashFn.update(text)
+  return reverseBytes(hashFn.getHash('HEX'))
+}
+
 function reverseBytes(hex) {
   return hex.match(/.{2}/g).reverse().join('');
 }
@@ -34,7 +40,7 @@ function toHeatColor(x) {
 }
 
 function toGlyphColor(hex) {
-  const hue = parseInt(hex, 16) / parseInt('100', 16) * 360
+  const hue = (1 - parseInt(hex, 16) / parseInt('100', 16)) * 360
   const saturation = 100
   const luminance = 50
   return `hsl(${hue}, ${saturation}%, ${luminance}%)`
@@ -48,4 +54,4 @@ function shallowCopy(value) {
   return JSON.parse(JSON.stringify(value))
 }
 
-export { reverseBytes, zeroToOne, toHeatColor, toGlyphColor, toBlockColor, shallowCopy }
+export { computeHash, reverseBytes, zeroToOne, toHeatColor, toGlyphColor, toBlockColor, shallowCopy }
