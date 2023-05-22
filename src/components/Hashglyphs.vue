@@ -1,6 +1,6 @@
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
-import { computeHash, zeroToOne, toHeatColor, toGlyphColor } from '../compute'
+import { ref, computed, onMounted } from 'vue'
+import { computeHash, zeroToOne, toHeatColor, toGlyphColor, toMonoColor, hexToHtml } from '../compute'
 
 const emit = defineEmits(['record'])
 
@@ -12,6 +12,10 @@ const props = defineProps({
   size: {
     type: Number,
     required: true
+  },
+  type: {
+    type: String,
+    default: 'glyph'
   }
 })
 
@@ -28,17 +32,24 @@ const hashglyphs = computed(() => {
     } else {
       v = hashHex.value.slice(index, index + 2)
     }
-    let rgb = toGlyphColor(v)
-    let htmlHex = `&#x22${v};`
+    // According to type
+    let rgb
+    if (props.type == 'glyph') {
+      rgb = toGlyphColor(v)
+    } else if (props.type == 'mono') {
+      rgb = toMonoColor(v)
+    } else if (props.type == 'kana') {
+      rgb = '#fff'
+    }
     // Send record event to Heatmap
     // Do not record when message is empty
     if (!!props.message) {
-      record(htmlHex)
+      record(v)
       emit('record', heatmap.value)
     }
     return {
       color: rgb,
-      htmlHex: htmlHex,
+      htmlHex: hexToHtml(v, props.type),
     }
   } )
 })
@@ -47,7 +58,7 @@ onMounted(() => {
   for (let i = 0; i < 256; i++) {
     const hexValue = i.toString(16).padStart(2, '0')
     heatmap.value.push({
-      htmlHex: `&#x22${hexValue};`,
+      hex: hexValue,
       number: 0,
       heatValue: 0,
       heatColor: toHeatColor(0)
@@ -57,8 +68,8 @@ onMounted(() => {
   emit('record', heatmap.value)
 })
 
-function record(htmlHex) {
-  const index = heatmap.value.findIndex( i => i.htmlHex == htmlHex )
+function record(hex) {
+  const index = heatmap.value.findIndex( i => i.hex == hex )
   let number = heatmap.value[index].number
   // Update
   number += 1
@@ -69,9 +80,18 @@ function record(htmlHex) {
 </script>
 
 <template>
-  <svg xmlns="http://www.w3.org/2000/svg" :width="size" :height="size">
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    :width="size" 
+    :height="size" 
+    :data-hash="hashHex"
+    data-type="glyph">
     <foreignObject x="0" y="0" width="100%" height="100%">
-      <div xmlns="http://www.w3.org/1999/xhtml" class="host" :style="`width: ${size}px; height: ${size}px; display: flex; flex-wrap: wrap; gap: 0; background-color: #000;`">
+      <div 
+        v-if="props.type != 'mono'"
+        xmlns="http://www.w3.org/1999/xhtml" 
+        class="host" 
+        :style="`width: ${size}px; height: ${size}px; display: flex; flex-wrap: wrap; gap: 0; background-color: #000;`">
         <div
           v-for="(i, index) in hashglyphs"
           :key="index"
@@ -79,6 +99,18 @@ function record(htmlHex) {
           :style="`color: ${i.color}; width: ${size/8}px; height: ${size/8}px; display: flex; justify-content: center; align-items: center;`">
           <span :style="`font-size: ${size/16}px;`" v-html="i.htmlHex">
           </span>
+        </div>
+      </div>
+      <div
+        v-else
+        xmlns="http://www.w3.org/1999/xhtml" 
+        class="host" 
+        :style="`width: ${size}px; height: ${size}px; display: flex; flex-wrap: wrap; gap: 0; background-color: #000;`">
+        <div
+          v-for="(i, index) in hashglyphs"
+          :key="index"
+          class="item"
+          :style="`background-color: ${i.color}; width: ${size/8}px; height: ${size/8}px;`">
         </div>
       </div>
     </foreignObject>

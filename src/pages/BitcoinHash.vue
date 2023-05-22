@@ -17,6 +17,7 @@ const size = ref(450)
 const hashglyphs = ref(null)
 const heatmap = ref([])
 const flipped = ref(false)
+const type = ref('glyph')
 
 const hashglyphsd = [
   {
@@ -26,12 +27,15 @@ const hashglyphsd = [
     cmd: './hashglyphsd --show-hashglyphs',
     execute: () => flipped.value = false,
   },{
-    cmd: './hashglyphsd --type color',
+    cmd: './hashglyphsd --type glyph',
+    execute: () => type.value = 'glyph',
   },{
-    cmd: './hashglyphsd --type grayscale',
+    cmd: './hashglyphsd --type mono',
+    execute: () => type.value = 'mono',
   },{
-    cmd: './hashglyphsd --reset',
-  }
+    cmd: './hashglyphsd --type kana',
+    execute: () => type.value = 'kana',
+  },
 ]
 
 const inscribe = async (id) => {
@@ -67,7 +71,7 @@ const inscribe = async (id) => {
   link.style.display = 'none';
   document.body.appendChild(link); // To work with Firefox
   link.href = dataURL;
-  link.download = id == '#hashglyphs' ? `${hashHex.value}.svg` : `${new Date().getTime()}.svg`
+  link.download = id == '#hashglyphs' ? `hashglyphs.svg` : `heatmap.svg`
   link.click();
 }
 </script>
@@ -76,7 +80,12 @@ const inscribe = async (id) => {
     <div :class="`flex w-[${size}px]`">
       <flip-block :size="size" :flipped="flipped">
         <template #front>
-          <hashglyphs :message="message" :size="size" @record="hm => heatmap = hm" id="hashglyphs">
+          <hashglyphs 
+            :message="message" 
+            :size="size" 
+            :type="type" 
+            @record="hm => heatmap = hm" 
+            id="hashglyphs">
           </hashglyphs>
         </template>
         <template #back>
@@ -88,7 +97,7 @@ const inscribe = async (id) => {
     <div class="flex place-content-center">
       <div class="indicator flex">
         <div class="indicator-item indicator-bottom">
-          <button class="btn btn-accent" @click="flipped ? inscribe('#heatmap') : inscribe('#hashglyphs')">
+          <button class="btn btn-accent" @click="inscribe('#hashglyphs')">
             Inscribe
           </button>
         </div>

@@ -7,6 +7,10 @@ const props = defineProps({
   size: {
     type: Number,
     required: true
+  },
+  type: {
+    type: String,
+    required: true
   }
 })
 </script>
@@ -17,10 +21,11 @@ const props = defineProps({
       <div xmlns="http://www.w3.org/1999/xhtml" class="host" :style="`width: ${size}px; height: ${size}px; display: flex; flex-wrap: wrap; gap: 0;`">
         <div
           v-for="i in heatmap"
-          :key="i.htmlHex"
+          :key="i.hex"
           class="item"
           :style="`background-color: ${i.heatColor}; width: ${size/16}px; height: ${size/16}px; display: flex; justify-content: center; align-items: center; color: #fff;`">
-          <span :style="`font-size: ${size/28}px;`" v-html="i.htmlHex">
+          <span :style="`font-size: ${size/28}px;`">
+            {{ i.hex }}
           </span>
         </div>
       </div>

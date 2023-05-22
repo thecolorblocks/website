@@ -46,12 +46,18 @@ function toGlyphColor(hex) {
   return `hsl(${hue}, ${saturation}%, ${luminance}%)`
 }
 
-function toBlockColor(hex) {
+function toMonoColor(hex) {
   return '#' + hex + hex + hex;
+}
+
+function hexToHtml(hex, type) {
+  if (type == 'glyph') return `&#x22${hex};`
+  if (type == 'mono') return ''
+  if (type == 'kana') return `&#x1B0${hex};`
 }
 
 function shallowCopy(value) {
   return JSON.parse(JSON.stringify(value))
 }
 
-export { computeHash, reverseBytes, zeroToOne, toHeatColor, toGlyphColor, toBlockColor, shallowCopy }
+export { computeHash, reverseBytes, zeroToOne, toHeatColor, toGlyphColor, toMonoColor, hexToHtml, shallowCopy }
