@@ -51,9 +51,9 @@ function toMonoColor(hex) {
 }
 
 function hexToHtml(hex, type) {
-  if (type == 'glyph') return `&#x22${hex};`
-  if (type == 'mono') return ''
-  if (type == 'kana') return `&#x1B0${hex};`
+  if (type == 'Mathematics') return `&#x22${hex};`
+  if (type == 'Monochrome') return ''
+  if (type == 'Nakamoto') return `&#x1B0${hex};`
 }
 
 function shallowCopy(value) {

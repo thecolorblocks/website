@@ -4,9 +4,9 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
-      path: "/bitcoin-hash",
-      name: "BitcoinHash",
-      component: () => import("../pages/BitcoinHash.vue"),
+      path: "/bitcoin-glyphs",
+      name: "BitcoinGlyphs",
+      component: () => import("../pages/BitcoinGlyphs.vue"),
     },
   ],
 });

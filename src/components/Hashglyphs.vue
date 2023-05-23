@@ -15,7 +15,11 @@ const props = defineProps({
   },
   type: {
     type: String,
-    default: 'glyph'
+    default: 'Mathematics'
+  },
+  signature: {
+    type: String,
+    default: '',
   }
 })
 
@@ -34,12 +38,12 @@ const hashglyphs = computed(() => {
     }
     // According to type
     let rgb
-    if (props.type == 'glyph') {
+    if (props.type == 'Mathematics') {
       rgb = toGlyphColor(v)
-    } else if (props.type == 'mono') {
+    } else if (props.type == 'Monochrome') {
       rgb = toMonoColor(v)
-    } else if (props.type == 'kana') {
-      rgb = '#fff'
+    } else if (props.type == 'Nakamoto') {
+      rgb = '#F7931A'
     }
     // Send record event to Heatmap
     // Do not record when message is empty
@@ -84,14 +88,15 @@ function record(hex) {
     xmlns="http://www.w3.org/2000/svg" 
     :width="size" 
     :height="size" 
-    :data-hash="hashHex"
-    data-type="glyph">
+    data-hash=""
+    data-type=""
+    data-signature="">
     <foreignObject x="0" y="0" width="100%" height="100%">
       <div 
-        v-if="props.type != 'mono'"
+        v-if="props.type != 'Monochrome'"
         xmlns="http://www.w3.org/1999/xhtml" 
         class="host" 
-        :style="`width: ${size}px; height: ${size}px; display: flex; flex-wrap: wrap; gap: 0; background-color: #000;`">
+        :style="`width: ${size}px; height: ${size}px; font-family: '${props.type}'; display: flex; flex-wrap: wrap; gap: 0; background-color: ${props.type == 'Mathematics' ? '#000' : '#13161F'};`">
         <div
           v-for="(i, index) in hashglyphs"
           :key="index"

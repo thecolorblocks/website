@@ -1,8 +1,9 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { computeHash } from '../compute'
 
-import { JuliaMonoMathOperators } from '../fonts'
+import { JuliaMonoMathOperators, BabelStoneHanKana } from '../fonts'
 
 import FlipBlock from '../components/FlipBlock.vue'
 import Hashglyphs from '../components/Hashglyphs.vue'
@@ -10,37 +11,40 @@ import Heatmap from '../components/Heatmap.vue'
 
 const router = useRouter()
 
-const title = ref('Bitcoin Hashglyphs')
+const title = ref('Bitcoin Glyphs')
 const message = ref('')
 const defaultMsg = ref('Typing art into existence...')
 const size = ref(450)
 const hashglyphs = ref(null)
 const heatmap = ref([])
 const flipped = ref(false)
-const type = ref('glyph')
+const type = ref('Mathematics')
+const signature = ref('')
 
-const hashglyphsd = [
+const glyphsd = [
   {
-    cmd: './hashglyphsd --show-heatmap',
+    cmd: './glyphd --show-heatmap',
     execute: () => flipped.value = true,
   },{
-    cmd: './hashglyphsd --show-hashglyphs',
+    cmd: './glyphd --show-glyphs',
     execute: () => flipped.value = false,
   },{
-    cmd: './hashglyphsd --type glyph',
-    execute: () => type.value = 'glyph',
+    cmd: './glyphd --type mathematics',
+    execute: () => type.value = 'Mathematics',
   },{
-    cmd: './hashglyphsd --type mono',
-    execute: () => type.value = 'mono',
-  },{
-    cmd: './hashglyphsd --type kana',
-    execute: () => type.value = 'kana',
+    cmd: './glyphd --type nakamoto',
+    execute: () => type.value = 'Nakamoto',
   },
 ]
 
-const inscribe = async (id) => {
+const buttonText = computed(() => {
+  if (glyphsd.find( c => c.cmd == message.value )) return 'EXECUTE'
+  return 'INSCRIBE'
+})
+
+const inscribe = (id) => {
   // See if commands are met
-  let cmd = hashglyphsd.find( c => c.cmd == message.value )
+  let cmd = glyphsd.find( c => c.cmd == message.value )
   if (!!cmd) {
     if (!!cmd.execute) cmd.execute()
     return
@@ -49,18 +53,26 @@ const inscribe = async (id) => {
   // Get svg information
   const svg = document.querySelector(id)
 
+  // Provide metadata and provenance signature
+  const signature = 'thisissigned'
+  svg.dataset.hash = computeHash(message.value)
+  svg.dataset.type = type.value
+  svg.dataset.signature = signature
+
   // Add font data
-  const fontDataURI = JuliaMonoMathOperators
-  const styleElement = document.createElementNS('http://www.w3.org/2000/svg', 'style')
-  styleElement.textContent = `
-  @font-face {
-    font-family: 'JuliaMono-MathOp';
-    src: url(${fontDataURI}) format('woff');
+  if (type.value == 'Mathematics' || type.value == 'Nakamoto') {
+    const fontDataURI = type.value == 'Mathematics' ? JuliaMonoMathOperators : BabelStoneHanKana
+    const styleElement = document.createElementNS('http://www.w3.org/2000/svg', 'style')
+    styleElement.textContent = `
+    @font-face {
+      font-family: 'CustomFont';
+      src: url(${fontDataURI}) format('woff');
+    }
+    .item {
+      font-family: 'CustomFont';
+    }`
+    svg.querySelector('div.host').appendChild(styleElement)
   }
-  .item {
-    font-family: 'JuliaMono-MathOp';
-  }`
-  svg.querySelector('div.host').appendChild(styleElement)
   
   // Download svg image
   const serializer = new XMLSerializer();
@@ -71,7 +83,7 @@ const inscribe = async (id) => {
   link.style.display = 'none';
   document.body.appendChild(link); // To work with Firefox
   link.href = dataURL;
-  link.download = id == '#hashglyphs' ? `hashglyphs.svg` : `heatmap.svg`
+  link.download = `hashglyphs.svg`
   link.click();
 }
 </script>
@@ -84,6 +96,7 @@ const inscribe = async (id) => {
             :message="message" 
             :size="size" 
             :type="type" 
+            :signature="signature" 
             @record="hm => heatmap = hm" 
             id="hashglyphs">
           </hashglyphs>
@@ -98,7 +111,7 @@ const inscribe = async (id) => {
       <div class="indicator flex">
         <div class="indicator-item indicator-bottom">
           <button class="btn btn-accent" @click="inscribe('#hashglyphs')">
-            Inscribe
+            {{ buttonText }}
           </button>
         </div>
         <div class="card border w-96">
@@ -107,8 +120,8 @@ const inscribe = async (id) => {
               {{ title }}
             </h1>
             <p class="py-6">
-              Inspired by the SHA-256 algorithm which ensures the immutability of the Bitcoin Blockchain, this generative art project lets you generate 
-              <a href="#" class="link-primary">SHA-256 Hashglyphs</a> 
+              Inspired by SHA-256 which helps ensure the immutability of the Bitcoin Blockchain, this generative art project lets you inscribe 
+              <a href="#" class="link-primary">SHA-256 Glyphs</a> 
               from the message you type in.
             </p>
             <textarea class="textarea textarea-bordered w-full h-64" v-model="message" :placeholder="defaultMsg"></textarea>
@@ -120,13 +133,10 @@ const inscribe = async (id) => {
 </template>
 <style scoped>
 @font-face {
-  /* https://juliamono.netlify.app */
-  font-family: JuliaMono-Bold;
-  src: url("https://cdn.jsdelivr.net/gh/cormullion/juliamono/webfonts/JuliaMono-Bold.woff2");
+  font-family: JuliaMono-Light;
+  src: url("https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.049/JuliaMono-Light.woff2");
 }
-
 .bitcoinhash {
-  /*font-family: monospace;*/
-  font-family: JuliaMono-Bold;
+  font-family: JuliaMono-Light;
 }
 </style>

@@ -2,6 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Mathematics';
+  src: url('./fonts/JuliaMonoMath.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Nakamoto';
+  src: url('./fonts/BabelStoneHanKana.woff') format('woff');
+}
+
 .center {
   margin: 0 auto;
 }
